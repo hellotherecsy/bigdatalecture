@@ -13,7 +13,11 @@ yum install accumulo
 ssh root@host1
 
 1. My sql 설치 
-yum install mysql
+yum install mysql mysql-server
+
+1-2. mysql 제거 
+yum remove mysql mysql-server 
+rm -rf /var/lib/mysql
 
 2. start 
 service mysqld start
