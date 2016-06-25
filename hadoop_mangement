@@ -1,0 +1,100 @@
+
+
+#### ssh root 접속 #####
+$> sudo vi /etc/ssh/sshd_config
+  PermitRootLogin yes <- 추가
+$> sydo service sshd restart
+
+
+
+######## ambari 설치 ######################
+
+참고 url : http://docs.hortonworks.com/HDPDocuments/Ambari-2.2.2.0/bk_Installing_HDP_AMB/content/_download_the_ambari_repo.html
+
+$> su -  ( 암호 : skcc )
+$> wget -nv http://public-repo-1.hortonworks.com/ambari/ubuntu14/2.x/updates/2.2.2.0/ambari.list -O /etc/apt/sources.list.d/ambari.list
+$> apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
+$> 	sudo apt-get update
+$> sudo apt-get install ambari-server
+
+$> ambari-server setup
+$> sudo ufw  disable
+$> sudo ambari-server start
+#######################################################
+
+
+
+################ 사전 setting #########################
+roo 계정으로 실행
+
+$> ssh-keygen
+$> cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+   ( ssh-copy-id -i .ssh/id_rsa.pub hadoop01 ) 
+ 
+sudo wget -nv http://public-repo-1.hortonworks.com/ambari/ubuntu14/2.x/updates/2.2.2.0/ambari.list -O /etc/apt/sources.list.d/ambari.list
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
+sudo apt-get update
+sudo apt-get install ambari-server
+
+#####################################################
+
+############# hadoop02 setting ###################
+계정 : root
+
+$> ssh-keygen
+
+[ hadoop01 서버에서 root 계정으로 실행 ]
+$> scp /root/.ssh/id_rsa.pub hadoop02:/root/.ssh/authorized_keys
+
+########################################################## 
+
+#### teragen 실습 ############
+
+계정 : hdfs
+
+Teragen
+$> hadoop fs -mkdir -p /user/suser/teragen
+$> cd /usr/hdp/current/hadoop-mapreduce-client
+$> yarn jar ./hadoop-mapreduce-examples.jar teragen 1048576 /user/suser/teragen/1g
+$> hadoop fs -ls /user/suser/teragen/1g
+$> hadoop fs -du -h /user/suser/teragen/1g
+
+Terasort
+$> yarn jar ./hadoop-mapreduce-examples.jar terasort /user/suser/teragen/1g /user/suser/terasort/1g
+$> hadoop fs –ls /user/suser/terasort/1g
+
+
+Teravalidate
+$> yarn jar ./hadoop-mapreduce-examples.jar teravalidate  /user/suser/terasort/1g /user/suser/terasort/validate
+
+
+###################################################################
+ 
+
+########## spark 실습 ###############
+
+
+(1) spark example : pi 구하기 
+: cd /usr/hdp/current/spark-client/
+./bin/spark-submit --class org.apache.spark.examples.SparkPi \
+    --master yarn \
+    --deploy-mode client \
+    --driver-memory 1g \
+    --executor-memory 1g \
+    --executor-cores 1 \
+    --queue default \
+    lib/spark-examples*.jar \
+    10
+
+
+(2) word count
+경로 : /test/input
+mode : yarn-client
+ ./bin/spark-shell --master yarn --deploy-mode client
+
+val textFile = sc.textFile("hdfs:///test/input")
+val counts = textFile.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _)
+counts.saveAsTextFile("hdfs:///test/spark_wordcount")
+
+
+
