@@ -1,0 +1,9 @@
+
+
+[Updates-ambari-2.2.2.0]
+name=ambari-2.2.2.0 - Updates
+baseurl=http://10.253.254.160/AMBARI-2.2.2.0/centos6/2.2.2.0-460
+gpgcheck=1
+gpgkey=http://10.253.254.160/AMBARI-2.2.2.0/centos6/2.2.2.0-460/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins
+enabled=1
+priority=1
