@@ -1,0 +1,89 @@
+
+
+1. repository check
+ : wget .repo
+   yum repolist 
+  
+
+2. ambari server install
+ : yum ambari-server install 
+
+
+3. ambaris server setup
+
+4. java setup
+ : /usr/lib/jvm/jre-1.7.0/bin
+5. ambari metastore postgreSQL 
+
+6. ambari server 접속 
+ : http://{ambari-server-ip}:8080
+
+7. cluster name : cloud 
+
+8. repository 변경 
+
+redhat6 
+HDP-2.4 = http://10.253.254.160/HDP/centos6/2.x/updates/2.4.3.0
+HDP-UTILS-1.1.0.20 = http://10.253.254.160/HDP-UTILS-1.1.0.20/repos/centos6
+
+
+9. ssh-keygen
+ : ssh-keygen 
+ : authorized_keys
+
+10. install hadoop eco 
+ hadoop
+ yarn/mapreduce
+ tez 
+ hive 
+ zookeeper 
+ spark 
+
+11. setup master 
+ : 
+ 1st server 
+ NameNode 
+ SNameNode 
+ History Server 
+ App Timeline Server 
+ ResourceManager 
+ HiveServer2
+ Hive Metastore 
+ WebHCat Server 
+ ZooKeeper Server
+ Spark History Server
+ 
+ 2nd server
+ 
+ 12. setup node
+ 1st server 
+   : datanode / node manager / client 
+ 2nd server 
+   : datanode / node manager / client 
+ 
+ 13. Customize Services 
+  : hive metastore : PostgreSql , 
+    account : hive / hive 
+    
+ ambari-server setup --jdbc-db=postgres --jdbc-driver=/path/to/postgres/postgresql.jar
+ 
+ 
+ ambari-server setup --jdbc-db=postgres --jdbc-driver=/usr/lib/ambari-server/postgresql-9.3-1101-jdbc4.jar
+ 
+ 14. hive setting 
+ : http://docs.hortonworks.com/HDPDocuments/Ambari-2.2.2.0/bk_ambari_reference_guide/content/_using_hive_with_postgresql.html
+
+ex) 
+
+su postgres
+echo "CREATE DATABASE hive;" | psql -U postgres
+echo "CREATE USER hive WITH PASSWORD 'hive';" | psql -U postgres
+echo "GRANT ALL PRIVILEGES ON DATABASE hive TO hive;" | psql -U postgres
+ 
+/var/lib/pgsql/data/pg_hba.conf
+local  all  hive,ambari,mapred md5
+host  all   hive,ambari,mapred 0.0.0.0/0  md5
+host  all   hive,ambari,mapred ::/0 md5
+
+service postgresql restart
+
