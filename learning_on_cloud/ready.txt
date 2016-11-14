@@ -19,5 +19,6 @@ chcon -R -h -t httpd_sys_content_t /var/www/html/AMBARI-2.2.2.0
  (1) /etc/hosts 수정
  (2) deskop --> server install 
  (3) service iptables stop 
+ (4) ntpd setting
   
 
