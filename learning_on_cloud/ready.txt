@@ -1,7 +1,21 @@
 
+
+
 1. java 
  : pre-installed 
  
 2. local repository install 
  : HD-TEST-01 
+ 
+3.   /etc/httpd/conf/httpd.conf  
+
+ls -Z
+chcon -R -h -t httpd_sys_content_t /var/www/html/HDP
+chcon -R -h -t httpd_sys_content_t /var/www/html/HDP-UTILS-1.1.0.20
+chcon -R -h -t httpd_sys_content_t /var/www/html/AMBARI-2.2.2.0
+
+
+4. 요청 
+ (1) /etc/hosts 수정
   
+
