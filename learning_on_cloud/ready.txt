@@ -1,0 +1,7 @@
+
+1. java 
+ : pre-installed 
+ 
+2. local repository install 
+ : HD-TEST-01 
+  
