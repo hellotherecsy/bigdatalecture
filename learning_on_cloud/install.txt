@@ -27,6 +27,10 @@ HDP-2.4 = http://10.253.254.160/HDP/centos6/2.x/updates/2.4.3.0
 HDP-UTILS-1.1.0.20 = http://10.253.254.160/HDP-UTILS-1.1.0.20/repos/centos6
 
 
+cd /etc/yum.repos.d
+wget http://10.253.254.160/ambari.repo 
+
+
 9. ssh-keygen
  : ssh-keygen 
  : authorized_keys
