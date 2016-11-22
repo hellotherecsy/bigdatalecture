@@ -122,4 +122,6 @@ Teravalidate
 
 
 
+wget http://10.253.254.160/payment_amount.csv
+
 
