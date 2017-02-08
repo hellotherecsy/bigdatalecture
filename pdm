@@ -1,0 +1,45 @@
+hbase.rootdir
+file:///data3/var/lib/ambari-metrics-collector/hbase
+hdfs://ambari-metrics-collector/hbase
+
+
+hbase.zookeeper.property.clientPort 
+61181
+2181
+
+81920 / 80896
+
+arn.scheduler.minimum-allocation-mb=4096  / 6144 
+yarn.scheduler.maximum-allocation-mb=101376
+
+ 	Property 	Service 	Config Group 	File Name 	Current Value 	Recommended Value
+	hive.tez.container.size 	Hive 	Hive Default 	hive-site 	6820 	6144
+	hive.auto.convert.join.noconditionaltask.size 	Hive 	Hive Default 	hive-site 	2383762773 	2147483648
+	mapreduce.map.memory.mb 	MapReduce2 	MapReduce2 Default 	mapred-site 	10240 	4096
+	mapreduce.reduce.memory.mb 	MapReduce2 	MapReduce2 Default 	mapred-site 	20480 	8192
+	yarn.app.mapreduce.am.command-opts 	MapReduce2 	MapReduce2 Default 	mapred-site 	-Xmx8192m -Dhdp.version=${hdp.version} 	-Xmx3276m -Dhdp.version=${hdp.version}
+	mapreduce.reduce.java.opts 	MapReduce2 	MapReduce2 Default 	mapred-site 	-Xmx16384m 	-Xmx6553m
+	yarn.app.mapreduce.am.resource.mb 	MapReduce2 	MapReduce2 Default 	mapred-site 	10240 	4096
+	mapreduce.map.java.opts 	MapReduce2 	MapReduce2 Default 	mapred-site 	-Xmx8192m 	-Xmx3276m
+	tez.task.resource.memory.mb 	Tez 	Tez Default 	tez-site 	8192 	6144
+	yarn.scheduler.maximum-allocation-mb 	YARN 	YARN Default 	yarn-site 	80896 	81920
+
+
+
+
+ Using cores=32 memory=128GB disks=12 hbase=False
+ Profile: cores=32 memory=106496MB reserved=24GB usableMem=104GB disks=12
+ Num Container=22
+ Container Ram=4608MB
+ Used Ram=99GB
+ Unused Ram=24GB
+ yarn.scheduler.minimum-allocation-mb=4608  / 6144 
+ yarn.scheduler.maximum-allocation-mb=101376
+ yarn.nodemanager.resource.memory-mb=101376
+ mapreduce.map.memory.mb=4608
+ mapreduce.map.java.opts=-Xmx3686m
+ mapreduce.reduce.memory.mb=4608
+ mapreduce.reduce.java.opts=-Xmx3686m
+ yarn.app.mapreduce.am.resource.mb=4608
+ yarn.app.mapreduce.am.command-opts=-Xmx3686m
+ mapreduce.task.io.sort.mb=1843
