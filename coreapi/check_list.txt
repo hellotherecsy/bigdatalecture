@@ -1,3 +1,11 @@
+### Proxy User 셋팅 필요 ####
+1. oozie proxy user
+oozie.service.ProxyUserService.proxyuser.root.hosts
+oozie.service.ProxyUserService.proxyuser.root.groups
+2. hdfs : 클러스터 네임 확인 필요
+3. corepuser에 대한 hive/oozie --> hdfs 권한 확인 필요
+4. mapreduce/oozie launcher에 대비한 계정확인 필요
+
 # Data API 환경설정 확인 
 - DB : 
 	. WFS_CONFIG
