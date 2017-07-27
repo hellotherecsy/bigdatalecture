@@ -1,0 +1,150 @@
+# Data API 환경설정 확인 
+- DB : 
+	. WFS_CONFIG
+	+----+---------------------+-------+--------------------+----------------------------------------------+------+-------+---------------------------------------------------------------------------+
+	| id | created_time        | fixed | last_modified_time | name                                         | sort | type  | value                                                                     |
+	+----+---------------------+-------+--------------------+----------------------------------------------+------+-------+---------------------------------------------------------------------------+
+	| 13 | 2017-06-20 16:55:57 |      | NULL               | fs.defaultFS                                 |    1 | hdfs  | hdfs://dacluster                                                          |
+	| 14 | 2017-06-20 16:55:57 |      | NULL               | dfs.ha.fencing.methods                       |    2 | hdfs  | shell(/bin/true)                                                          |
+	| 15 | 2017-06-20 16:55:57 |      | NULL               | dfs.ha.automatic-failover.enabled            |    3 | hdfs  | true                                                                      |
+	| 16 | 2017-06-20 16:55:57 |      | NULL               | dfs.nameservices                             |    4 | hdfs  | dacluster                                                                 |
+	| 17 | 2017-06-20 16:55:57 |      | NULL               | dfs.ha.namenodes.dacluster                   |    5 | hdfs  | nn1,nn2                                                                   |
+	| 18 | 2017-06-20 16:55:57 |      | NULL               | dfs.namenode.rpc-address.dacluster.nn1       |    6 | hdfs  | dataplatform01.skcc.com:8020                                              |
+	| 19 | 2017-06-20 16:55:57 |      | NULL               | dfs.namenode.rpc-address.dacluster.nn2       |    7 | hdfs  | dataplatform02.skcc.com:8020                                              |
+	| 20 | 2017-06-20 16:55:57 |      | NULL               | dfs.client.failover.proxy.provider.dacluster |    8 | hdfs  | org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider |
+	| 21 | 2017-06-20 16:55:57 |      | NULL               | yarn.resourcemanager.address                 |    1 | yarn  | dataplatform02.skcc.com:8050                                              |
+	| 22 | 2017-06-20 16:55:57 |      | NULL               | mapreduce.jobhistory.webapp.address          |    2 | yarn  | dataplatform01.skcc.com:19888                                             |
+	| 23 | 2017-06-20 16:55:57 |      | NULL               | oozie.url                                    |    1 | oozie | http://dataplatform03.skcc.com:11000/oozie                                |
+	| 24 | 2017-06-20 16:55:57 |      | NULL               | oozie.libpath                                |    2 | oozie | /user/oozie/share/lib/lib_20170616030408                                  |
+	| 25 | 2017-06-20 16:55:57 |      | NULL               | oozie.notification.url                       |    3 | oozie | http://dataplatform04:7070                                                |
+	+----+---------------------+-------+--------------------+----------------------------------------------+------+-------+---------------------------------------------------------------------------+
+	* HDFS가 HA 구성일 때는, hdfs-site.xml의 설정을 참고한다. 상기 예시에서, type = 'hdfs'인 설정에 준하는 모든 값이 포함되어야 한다. (누락 시, Job Pending 가능성 有)
+		1) HA 구성일 때 fs.defaultFS의 값은 '클러스터명'을 넣는다.
+			1-1) dfs.nameservices Key값에 대응되는 Value는 '클러스텨명'이다.
+			1-2) '클러스터명'에 따라 Key값이 다른 설정들이 있으므로 유의한다.
+				e.g. dfs.ha.namenodes.dacluster / fs.namenode.rpc-address.dacluster.nn1 / fs.namenode.rpc-address.dacluster.nn2 / dfs.client.failover.proxy.provider.dacluster
+		2) 싱글 구성일 때 fs.defaultFS의 값은 '{hostname}:8020'과 같은 형태를 가진다.
+		
+		
+	* YARN이 HA 구성일 때는, yarn-site.xml의 설정을 참고한다. (yarn.resourcemanager.address)
+		1) HA 구성일 때는 'yarn-cluster' 등의 이름을 가진다.
+		2) 싱글 구성일 때는 '{hostname}:8032'과 같은 형태를 가진다.
+	
+	* API Callback을 위한 URL을 지정해야 하며, API 서버 URL을 넣으면 된다.
+		1) oozie.notification.url = http://dataplatform04:7070
+		2) 단, notification.url은 oozie 서버에서 접속 가능한 hostname이어야 한다.
+
+
+- config-workflow.properties
+  ----------------------------------------------------------------------------------------------------------------------------------------
+	### Workflow DB JDBC Settings ###
+	wfs.jdbc.driverClassName=com.mysql.jdbc.Driver
+	wfs.jdbc.url=jdbc:mysql://dataplatform16:3306/wfs?useUnicode=true&characterSetResults=utf8&useOldAliasMetadataBehavior=true
+	wfs.jdbc.username=wfs
+	wfs.jdbc.password=wfs
+	wfs.jdbc.maxPoolSize=50
+	wfs.jdbc.minPoolSize=1
+	wfs.jdbc.maxStatements=100
+	wfs.jdbc.testConnection=true
+	
+	### Hibernate JPA Settings ###
+	### hibernate.hbm2ddl.auto = { create | create-drop | validate | ... Initial data will be inserted in case of 'create' or 'create-drop'}
+	hibernate.show_sql=false
+	hibernate.format_sql=true
+	hibernate.hbm2ddl.auto=validate
+	hibernate.hbm2ddl.import_files=init-data/WFS_INIT_DATA_v1.0.sql
+	
+	## Yarn Timeline 서버 Rest APIs
+	yarn.timeline.address=http://dataplatform05.skcc.com:8188/ws/v1
+	## Yarn Timeline 서버 Rest APIs
+	yarn.rm.addr=http://dataplatform05.skcc.com:8088
+	## Jobhistory Rest APIs server
+	mr.jobhistory.address=http://dataplatform05.skcc.com:19888
+	----------------------------------------------------------------------------------------------------------------------------------------
+	* 최초 API Server 기동 시, hibernate.hbm2ddl.auto = create 로 설정해야 한다. (반드시! 그래야 DB 스키마를 생성한다.)
+	* API Server 기동 후에는, 반드시! hibernate.hbm2ddl.auto = validate로 변경해두어야 한다. (그래야 스키마를 계속 새로 만드는 불상사를 막을 수 있다.)
+	
+	
+	
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Hadoop Core / Eco 확인
+- YARN Core 정상 동작 확인
+	. Teragen 확인
+		$> hadoop jar /usr/hdp/2.5.3.0-37/hadoop-mapreduce/hadoop-mapreduce-examples.jar teragen 1000000 /teraInput
+	. Terasort 확인
+		$> hadoop jar /usr/hdp/2.5.3.0-37/hadoop-mapreduce/hadoop-mapreduce-examples.jar terasort /teraInput /teraOutput
+		
+- Oozie 정상 동작 확인
+	. Map-Reduce Example 확인
+		$> cd ${OOZIE_SERVER_HOME}
+		$> tar zxvf oozie-examples.tar.gz
+		$> cd examples/apps/map-reduce/
+		$> hadoop fs -put workflow.xml /user/${user.name}/examples/apps/map-reduce/workflow.xml
+		$> vi job.properties
+			-------------- (하둡 환경에 맞게 변경) --------------
+			nameNode=hdfs://dpcluster
+			jobTracker=yarn-cluster
+			queueName=default
+			-----------------------------------------------------
+		$> oozie job -oozie http://dataplatform06:11000/oozie -config ./job.properties -run
+		
+- 쉘에서 Hive 정상 동작 확인
+	. 임의 노드에서 'hive' 실행 후 임의 쿼리 문제없는지 확인
+		$> hive
+			----------------------------------------------------
+			show databases;
+			show tables;
+			...
+			----------------------------------------------------
+			
+- 쉘에서 Spark submit 정상 동작 확인
+	. 임의 노드에서 'spark submit' 실행 후 정상 동작하는지 확인
+		$> spark-submit --class org.apache.spark.examples.SparkPi --master local[8] /usr/hdp/2.5.3.0-37/spark/lib/spark-examples-1.6.2.2.5.3.0-37-hadoop2.7.3.2.5.3.0-37.jar  100
+
+- Data API를 이용하여 API 확인
+	. 1) Oozie ShareLib 준비
+			: hdfs://{SHARE_LIB_HOME}/sqoop/에 mysql-connector.jar 업로드
+			: hdfs://{SHARE_LIB_HOME}/hive/에 hive-site.xml 업로드
+	. 2) HDFS에 데이터 업로드
+			$> cp {다운로드 위치}/examples.tar.gz ./
+			$> tar zxvf examples.tar.gz
+			$> hadoop fs -mkdir -p /user/corepuser
+			$> hadoop fs -put examples /user/corepuser
+	. 3) Mysql (for Sqoop 타겟 RDB)에 테이블 생성
+			: mysql 접속
+			mysql> use test; 
+			mysql> CREATE TABLE `STATISTICS_BY_AGE` (`AGE` int(11) DEFAULT NULL, `TOTAL_AMOUNT` int(11) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Statistics per Age';
+			mysql> CREATE TABLE `STATISTICS_BY_BUSINESS_TYPE` (`BUSINESS_TYPE` varchar(255) DEFAULT NULL, `TOTAL_AMOUNT` int(11) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Statistics per Business Type';
+			mysql> CREATE TABLE `STATISTICS_BY_SEX` (`SEX` varchar(255) DEFAULT NULL, `TOTAL_AMOUNT` int(11) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Statistics per User Sex';
+	. 4) 워크플로우 생성
+			POST http://{API_SERVER}:7070/api/v1/workflow?requestUser=corepuser
+			{
+			 "name": "card_statistics_workflow",
+			 "category": "statistics",
+			 "alias": "sqoop-hive-workflow",
+			 "description": "Get card stastics",
+			 "appName": "wfs.ubrxkt4e7bjo",
+			 "xml": "<workflow-app xmlns='uri:oozie:workflow:0.5' name='hive-sqoop'> <start to='hive-node'/> <action name='hive-node'> <hive xmlns='uri:oozie:hive-action:0.6'> <job-tracker>${jobTracker}</job-tracker> <name-node>${nameNode}</name-node> <configuration> <property> <name>mapred.job.queue.name</name> <value>${queueName}</value> </property> </configuration> <query> CREATE EXTERNAL TABLE IF NOT EXISTS CARD_HISTORY ( TRANSACTION_DATE STRING, TRANSACTION_ID STRING, TRANSACTION_TYPE STRING, CARD_NUMBER STRING, CARD_OWNER STRING, EXPIRE_DATE STRING, AMOUNT INT, MERCHANT_ID STRING, LOCATION_X INT, LOCATION_Y INT ) COMMENT 'Card History Table' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '${cardHistory}'; CREATE EXTERNAL TABLE IF NOT EXISTS USERS ( USER_ID STRING, USER_NAME STRING, AGE INT, SEX STRING, ADDRESS STRING ) COMMENT 'User Table' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '${user}'; CREATE EXTERNAL TABLE IF NOT EXISTS MERCHANT ( MERCHANT_ID STRING, MERCHANT_NAME STRING, BUSINESS_TYPE STRING ) COMMENT 'Merchant Table' ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LOCATION '${merchant}'; CREATE TABLE IF NOT EXISTS STATISTICS_BY_BUSINESS_TYPE( BUSINESS_TYPE STRING, TOTAL_AMOUNT INT ) COMMENT 'Statistics per Business Type' ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; CREATE TABLE IF NOT EXISTS STATISTICS_BY_SEX( SEX STRING, TOTAL_AMOUNT INT ) COMMENT 'Statistics per User Sex' ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; CREATE TABLE IF NOT EXISTS STATISTICS_BY_AGE( AGE INT, TOTAL_AMOUNT INT ) COMMENT 'Statistics per Age' ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; INSERT INTO TABLE STATISTICS_BY_BUSINESS_TYPE SELECT M.BUSINESS_TYPE, SUM(C.AMOUNT) AS TOTAL_AMOUNT FROM CARD_HISTORY C JOIN MERCHANT M ON (C.MERCHANT_ID = M.MERCHANT_ID) GROUP BY M.BUSINESS_TYPE; INSERT INTO TABLE STATISTICS_BY_SEX SELECT U.SEX, SUM(C.AMOUNT) AS TOTAL_AMOUNT FROM CARD_HISTORY C JOIN USERS U ON (C.CARD_OWNER = U.USER_ID) GROUP BY U.SEX; INSERT INTO TABLE STATISTICS_BY_AGE SELECT U.AGE, SUM(C.AMOUNT) AS TOTAL_AMOUNT FROM CARD_HISTORY C JOIN USERS U ON (C.CARD_OWNER = U.USER_ID) GROUP BY U.AGE; </query> </hive> <ok to='fork'/> <error to='fail'/> </action> <fork name='fork'> <path start='sqoop-node-1'/> <path start='sqoop-node-2'/> <path start='sqoop-node-3'/> </fork> <action name='sqoop-node-1'> <sqoop xmlns='uri:oozie:sqoop-action:0.4'> <job-tracker>${jobTracker}</job-tracker> <name-node>${nameNode}</name-node> <configuration> <property> <name>mapred.job.queue.name</name> <value>${queueName}</value> </property> </configuration> <command>export --connect jdbc:mysql://dataplatform16.skcc.com/test --driver com.mysql.jdbc.Driver --username wfs --password wfs --table STATISTICS_BY_BUSINESS_TYPE --hcatalog-table STATISTICS_BY_BUSINESS_TYPE --skip-dist-cache</command> </sqoop> <ok to='join'/> <error to='fail'/> </action> <action name='sqoop-node-2'> <sqoop xmlns='uri:oozie:sqoop-action:0.4'> <job-tracker>${jobTracker}</job-tracker> <name-node>${nameNode}</name-node> <configuration> <property> <name>mapred.job.queue.name</name> <value>${queueName}</value> </property> </configuration> <command>export --connect jdbc:mysql://dataplatform16.skcc.com/test --driver com.mysql.jdbc.Driver --username wfs --password wfs --table STATISTICS_BY_SEX --hcatalog-table STATISTICS_BY_SEX --skip-dist-cache</command> </sqoop> <ok to='join'/> <error to='fail'/> </action> <action name='sqoop-node-3'> <sqoop xmlns='uri:oozie:sqoop-action:0.4'> <job-tracker>${jobTracker}</job-tracker> <name-node>${nameNode}</name-node> <configuration> <property> <name>mapred.job.queue.name</name> <value>${queueName}</value> </property> </configuration> <command>export --connect jdbc:mysql://dataplatform16.skcc.com/test --driver com.mysql.jdbc.Driver --username wfs --password wfs --table STATISTICS_BY_AGE --hcatalog-table STATISTICS_BY_AGE --skip-dist-cache</command> </sqoop> <ok to='join'/> <error to='fail'/> </action> <join name='join' to='end'/> <kill name='fail'> <message>Hive failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message> </kill> <end name='end'/> </workflow-app>",
+			 "libPath": null,
+			 "useSystemLibPath": true
+			}
+	. 5) 워크플로우 실행
+			PUT http://{API_SERVER}:7070/api/v1/workflow/run/1?requestUser=corepuser
+			{
+			 "db": "dataplatform16:3306",
+			 "table": "test",
+			 "dbuser": "wfs",
+			 "dbpassword": "wfs",
+			 "queueName": "batch1",
+			 "cardHistory": "/user/corepuser/examples/data/card_history",
+			 "user": "/user/corepuser/examples/data/user",
+			 "merchant": "/user/corepuser/examples/data/merchant",
+			 "oozie.action.sharelib.for.sqoop": "sqoop,hive,hcatalog"
+			}
+	. 6) 워크플로우 Job 확인
+			GET http://{API_SERVER}:7070/api/v1/workflow/job/{oozieJobId}?requestUser=corepuser
+	. 7) 워크플로우 Job Log 확인
+			GET http://{API_SERVER}:7070/api/v1/workflow/job/action/log/{applicationId}?requestUser=corepuser
+			* Job이 RUNNING 중일 때도 결과가 나오고, SUCCEEDED 후에도 결과가 나와야 함
