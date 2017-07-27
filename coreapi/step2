@@ -1,0 +1,2 @@
+
+{"db":"dataplatform16:3306","table":"test","dbuser":"wfs","dbpassword":"wfs","queueName":"batch1","cardHistory":"/user/corepuser/examples/data/card_history","user":"/user/corepuser/examples/data/user","merchant":"/user/corepuser/examples/data/merchant","oozie.action.sharelib.for.sqoop":"sqoop,hive,hcatalog"}
